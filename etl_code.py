@@ -108,9 +108,9 @@ def transform_files(file_paths, output_file_path):
 
 # Step 4: Load transformed data into RDS
 def load_into_rds(output_file_path):
-    d = credentials.conn_detail
+    cred = credentials.conn_detail
     try:
-        engine = create_engine(f'mysql+pymysql://**data)
+        engine = create_engine(f"mysql+pymysql://{cred['username']}:{cred['password']}@{cred['host']}:{cred['port']}/{cred['database']}")
         df = pd.read_csv(output_file_path)
         table_name = 'transformed_data'
         df.to_sql(table_name, engine, index=False, if_exists='replace')
@@ -133,8 +133,19 @@ if __name__ == "__main__":
         extract_file(download_path, extract_path)
 
         # Step 3: Upload extracted files to S3
-        upload_files_to_s3(extract_path, bucket_name)
+        # List all file and add
+        all_files = os.listdir(extract_path)
 
+        # Filter files by extension (CSV, JSON, XML)
+        filtered_files = [f for f in all_files if f.endswith(('.csv', '.json', '.xml'))]
+
+        # Upload filtered files to S3
+        for raw_file in filtered_files:
+            file_path = os.path.join(extract_path, raw_file)
+            s3_key = f'datastore/{raw_file}'  # S3 object key
+            upload_to_s3(file_path, bucket_name, s3_key)
+
+        
         # Step 4: List and download files from S3
         download_prefix = 'datastore/'
         local_download_dir = os.path.join(extract_path, 's3')
