@@ -90,9 +90,9 @@ def process_file(file_path):
 
     # Perform unit conversions if columns exist
     if 'height' in df.columns:
-        df['height_m'] = (df['height'] * 0.0254).round(2)
+        df['height'] = (df['height'] * 0.0254).round(2)
     if 'weight' in df.columns:
-        df['weight_kg'] = (df['weight'] * 0.453592).round(2)
+        df['weight'] = (df['weight'] * 0.453592).round(2)
     
     return df
 
